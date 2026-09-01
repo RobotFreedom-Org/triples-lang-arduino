@@ -1,8 +1,8 @@
 
 struct SVO { 
-  String s;  
-  String v;  
-  String o;  
+  char s[12] ;  
+  char v[12] ;  
+  char o[12] ;  
 }; 
 
 struct cmdsSVO { 
@@ -11,14 +11,13 @@ struct cmdsSVO {
   char o[8];  
 }; 
 
-struct iSVO { 
+struct INTSVO { 
   int s;  
   int v;  
   int o;  
-}; 
+};  
 
-
-struct fSVO { 
+struct FLTSVO { 
   float s;  
   float v;  
   float o;  

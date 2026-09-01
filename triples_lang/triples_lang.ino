@@ -1,7 +1,33 @@
 /*
- Arduino Triples-Lang
- RobotFreedom.org 2026
- Lisenses MIT
+ Arduino Triples-Lang 
+
+ Copyright (c) 2026 RobotFreedom.org 
+ Author: RobotFreedom.org  
+ License: MIT License
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+
+
+#include <cstdio>
+#include <iostream>
+#include "struct.h" 
+#include "triples_lang.h" 
   
 */
 
@@ -11,12 +37,12 @@ const int MAX_CMD_LINES = 30;
 const int MAX_VAR_NAME  = 6; 
 const int MAX_BLOCKS    = 2;
 const int MAX_CMDS      = 4;  
-cmdsSVO BLOCKS[MAX_BLOCKS][MAX_CMDS];
+struct cmdsSVO BLOCKS[MAX_BLOCKS][MAX_CMDS];
 
-const int MAX_FUNCTS   = 3;
+const int MAX_ROUTINES   = 3;
 const int MAX_F_CMDS   = 8; 
-char FUNCTSSNAMES[MAX_FUNCTS][MAX_VAR_NAME] ;
-cmdsSVO FUNCTS[MAX_FUNCTS][MAX_F_CMDS] ;
+char ROUTINESSNAMES[MAX_ROUTINES][MAX_VAR_NAME] ;
+struct cmdsSVO ROUTINES[MAX_ROUTINES][MAX_F_CMDS] ;
 
 const int MAX_MEM     = 10; 
 char MEMSTR[MAX_MEM][MAX_CMD_LINES] ;
@@ -26,23 +52,31 @@ float  MEMFLT[MAX_MEM] ;
 char MEMFLTNAME[MAX_MEM][MAX_VAR_NAME] ; 
 
 char current_name[ MAX_VAR_NAME] ; 
- 
-
-
+  
 
 int current_blocks = -1;
 int current_mem    = -1;
 int loaded_routine    = -1;
+  
 
-char empty = '                              ';
- 
-
-void initBlock(int block) {
+void initRoutine(int routineId) {
   int _max = MAX_CMDS - 1;
   for (int i = 0; i < _max; i++) { 
-    BLOCKS[block][i].v[0] =  {0};
-    BLOCKS[block][i].s[0] =  {0};
-    BLOCKS[block][i].o[0] =  {0};
+       strcpy(ROUTINES[routineId][i].s, "");
+       strcpy(ROUTINES[routineId][i].o, "");
+       strcpy(ROUTINES[routineId][i].v, ""); 
+  }
+}
+
+void initBlock(int blockId) {
+  int _max = MAX_CMDS - 1;
+  for (int i = 0; i < _max; i++) { 
+       strcpy(BLOCKS[blockId][i].s, "");
+       strcpy(BLOCKS[blockId][i].o, "");
+       strcpy(BLOCKS[blockId][i].v, "");
+  //  BLOCKS[block][i].v[0] =  {0};
+  //  BLOCKS[block][i].s[0] =  {0};
+    //BLOCKS[block][i].o[0] =  {0};
   }
 }
 
@@ -54,13 +88,19 @@ void setup() {
   for (int i = 0; i < _max; i++) {
     initBlock(i);
   }  
+
+  int _max_r = MAX_ROUTINES - 1;
+  for (int i = 0; i < _max_r; i++) {
+    initRoutine(i);
+  }  
 } 
 
 int nextBlock() {
 
   int _max = MAX_BLOCKS - 1;
   for (int i = 0; i < _max; i++) {
-    if (BLOCKS[i][0].s[0] == '\0') {
+    if (strcmp(BLOCKS[i][0].s, "")  == 0)  {  
+   // if (BLOCKS[i][0].s[0] == '\0') {
       return i;
     }
   }
@@ -68,34 +108,36 @@ int nextBlock() {
 }
 
 
-int nextCmd(int block) {
+int nextCmd(int block_id) {
 
   int _max = MAX_CMDS;  
-  for (int i = 0; i < _max; i++) { 
-    if (BLOCKS[block][i].s[0] == '\0') { 
+  for (int i = 0; i < _max; i++) {  
+    if (strcmp( BLOCKS[block_id][i].v , "")  == 0) {   
       return i;
-    }
-  }
+      } 
+  } 
+
   return 0;
-}
+ }
 
 
-int nextFunct() {
+int nextRoutine() {
 
-  int _max = MAX_FUNCTS - 1;
+  int _max = MAX_ROUTINES - 1;
   for (int i = 0; i < _max; i++) {
-    if (FUNCTS[i][0].v[0] == '\0') {
+    if (strcmp(ROUTINES[i][0].s, "")  == 0)  {  
+   // if (FUNCTS[i][0].v[0] == '\0') {
       return i;
     }
   }
   return 0;
 }
 
-int getroutineyID(char name[] ) {
+int getRoutineID(char name[] ) {
  
   int _max = MAX_MEM -1;
   for (int i = 0; i < _max; i++) {  
-      if ( strcmp(FUNCTSSNAMES[i], name)  ==0 ) {
+      if ( strcmp(ROUTINESSNAMES[i], name)  ==0 ) {
         return  i; 
     }
   }
@@ -139,7 +181,7 @@ char setMemory(char name[], char value[]  ) {
       MEMSTRNAME[_id][i] = name[i];
       MEMSTR[_id][i] = value[i];
   }  
-  return "";
+  return ' ';
 }  
  
 void copy(char source[], char target[]  ) { 
@@ -160,64 +202,79 @@ char clearMemory( ) {
       MEMSTR[i][0] = {0}; 
    }
   current_mem = -1;
-  return "";
+  return ' ';
 }  
 
 
-SVO runIfBlock(int block) {
+struct SVO runIfBlock(int blockId) {
+
+  struct SVO output;
+  //strcpy(output.s, ""); 
+ // strcpy(output.v, ""); 
+  strcpy(output.o, " ");  
 
   int _max = MAX_CMDS - 1;
   int run = 1; 
 
-  for (int i = 0; i < _max; i++) {
-    if (BLOCKS[block][i].v != "0" && run == 1) { 
+  for (int i = 0; i < _max; i++) { 
+    if ( (strcmp( BLOCKS[blockId][i].v, " ")  != 0) && (strcmp(BLOCKS[blockId][i].v , "")  != 0) &&  (strcmp(BLOCKS[blockId][i].v, ' ')  != 0) && run == 1) { 
         if (i == 0) {
-          
-          char*  v =  BLOCKS[block][i].v; 
-          char*  s =  BLOCKS[block][i].s;   
-          char*  o =  BLOCKS[block][i].o ;   
+    
+          char*  v =  BLOCKS[blockId][i].v; 
+          char*  s =  BLOCKS[blockId][i].s;   
+          char*  o =  BLOCKS[blockId][i].o ;   
+   
+          struct SVO condition = core(v,s,o); 
   
-          SVO condition = core(v,s,o); 
-          if (condition.o == "0") {
-            run = 0; 
- 
+          if (strcmp(  condition.o, "0")  == 0) { 
+            run = 0;   
           }
         } else { 
-          char*  v = BLOCKS[block][i].v ;  
-          char*  s = BLOCKS[block][i].s;  
-          char*  o = BLOCKS[block][i].o;     
-          return core(v,s,o);
+          char*  v = BLOCKS[blockId][i].v ;  
+          char*  s = BLOCKS[blockId][i].s;  
+          char*  o = BLOCKS[blockId][i].o;      
+          struct SVO  _output = core(v,s,o);   
+          strcpy(output.o, _output.o);   
         } 
     }
   }
+  return output;
 }
  
 
-SVO execute( char* o) {
-  SVO output;
+struct SVO execute( char* o) {
+  struct SVO output;
+  //strcpy(output.s, ""); 
+ // strcpy(output.v, ""); 
+  strcpy(output.o, " ");  
+
   int _max = MAX_CMDS - 1;
   int run = 1;
-  int block = getroutineyID(o);    
+  int routine_id = getRoutineID(o);     
   for (int i = 0; i < _max; i++) {
-    if (FUNCTS[block][i].v != "0" && run == 1) { 
-          char*  v =  FUNCTS[block][i].v; 
-          char*  s =  FUNCTS[block][i].s;   
-          char*  o =  FUNCTS[block][i].o ;    
-          output = core(v , s, o); 
+ 
+
+    if ( (strcmp( ROUTINES[routine_id][i].v , " ")  != 0) &&   (strcmp( ROUTINES[routine_id][i].v , "")  != 0) &&  (strcmp( ROUTINES[routine_id][i].v , ' ')  != 0) && run == 1) { 
+          char*  v =  ROUTINES[routine_id][i].v; 
+          char*  s =  ROUTINES[routine_id][i].s;   
+          char*  o =  ROUTINES[routine_id][i].o ;     
+          struct SVO  _output = core(v , s, o);     
+          strcpy(output.o, _output.o);  
       }
-    } 
+    }  
   return output;
 }
 
 
-SVO dispatcher(char *v, char *s, char *o) {
+struct SVO dispatcher(char *v, char *s, char *o) {
  
-  SVO output;
-  output.v = "";
-  output.s = "";
-  output.o = "";  
+  struct SVO output; 
  
- 
+  strcpy(output.s, ""); 
+  strcpy(output.v, ""); 
+  strcpy(output.o, "");  
+
+
   if (current_blocks != -1) {
  
      if (strcmp(v, "flow")  == 0  && strcmp(s, "if")  == 0  &&  strcmp(o, "end")  == 0) { 
@@ -243,9 +300,11 @@ SVO dispatcher(char *v, char *s, char *o) {
             copy(BLOCKS[current_blocks][i].s, BLOCKS[parent_block][j].s );
             copy(BLOCKS[current_blocks][i].o, BLOCKS[parent_block][j].o ) ;
          }
-         BLOCKS[current_blocks][0].s[0] = {0};
-         BLOCKS[current_blocks][0].v[0] = {0};
-         BLOCKS[current_blocks][0].o[0]  = {0};
+         //BLOCKS[current_blocks][0].s[0] = {0};
+         //BLOCKS[current_blocks][0].v[0] = {0};
+         //BLOCKS[current_blocks][0].o[0] = {0};
+
+         initBlock(current_blocks) ;
          current_blocks = current_blocks - 1; 
 
          return  output;
@@ -255,35 +314,32 @@ SVO dispatcher(char *v, char *s, char *o) {
     } else if (strcmp(v, "routine")  == 0  && strcmp(s, "create")  == 0  &&  strcmp(o, "end")  == 0) {  
 
         int cmds_cnt = MAX_CMDS -1;
-        int funct_id = nextFunct();
-
-        // Serial.println("creating a routine!");
-        // Serial.println(funct_id);
-        // Serial.println(current_name);
+        int routine_id = nextRoutine();
+ 
  
          int _max = MAX_VAR_NAME -1;
          for (int i = 0; i < _max; i++) {   
-              FUNCTSSNAMES[funct_id][i] = current_name[i]; 
+              ROUTINESSNAMES[routine_id][i] = current_name[i]; 
            }  
   
-        for (int i = 0; i <= cmds_cnt; i++) {
-          copy(BLOCKS[current_blocks][i].v, FUNCTS[funct_id][i].v );
-          copy(BLOCKS[current_blocks][i].s, FUNCTS[funct_id][i].s );
-          copy(BLOCKS[current_blocks][i].o, FUNCTS[funct_id][i].o ); 
-         } 
+        for (int i = 0; i <= cmds_cnt; i++) {     
+          copy(BLOCKS[current_blocks][i].v, ROUTINES[routine_id][i].v );
+          copy(BLOCKS[current_blocks][i].s, ROUTINES[routine_id][i].s );
+          copy(BLOCKS[current_blocks][i].o, ROUTINES[routine_id][i].o ); 
+         }   
+ 
 
-         BLOCKS[current_blocks][0].v[0] = {0};
-         BLOCKS[current_blocks][0].s[0] = {0};
-         BLOCKS[current_blocks][0].o[0] = {0};
-         current_blocks = current_blocks - 1; 
-         current_name[0]  = {0}; 
+         initBlock(current_blocks) ;
+         current_blocks = current_blocks - 1;  
+         strcpy(current_name, ""); 
          return output;
 
     } else {
-      int current_code = nextCmd(current_blocks);   
+      int current_code = nextCmd(current_blocks);    
       copy( v, BLOCKS[current_blocks][current_code].v );
       copy( o, BLOCKS[current_blocks][current_code].o );
       copy( s, BLOCKS[current_blocks][current_code].s ); 
+    //  Serial.println (current_blocks); 
       return output;
     }
 
@@ -324,12 +380,14 @@ int main() {
   int year = atoi(token);   
 }*/
 
-SVO core(char *v , char *s , char *o ) {
+struct SVO core(char *v , char *s , char *o ) {
  
-  SVO output;
-  output.v = "";
-  output.s = "";
-  output.o = "";   
+  struct SVO output;
+ 
+
+  strcpy(output.s, ""); 
+  strcpy(output.v, ""); 
+  strcpy(output.o, "");  
 
   if (strcmp(v, "help")   == 0  ) {  
       Serial.println("set,get,echo,add,subtract,divide,multiple,increment,decrement,more,less,equal,different,flow,routine,help");
@@ -337,8 +395,8 @@ SVO core(char *v , char *s , char *o ) {
   else if (strcmp(v, "annotation") ==0){
       
   }
-  else if ( strcmp(v, "echo")   == 0) {
-       Serial.println(s); 
+  else if ( strcmp(v, "echo")   == 0) { 
+      strcpy(output.o, s);  
 
   } else if (strcmp(v, "flow")   == 0  ) {
     if ( strcmp(s, "if")   == 0  ) { 
@@ -350,21 +408,17 @@ SVO core(char *v , char *s , char *o ) {
  
   else if (strcmp(v, "routine")   == 0  ) { 
     if (strcmp(s, "create")   == 0  ) {
- 
+  
          current_blocks = nextBlock();   
-         current_name[0]= '\0' ; 
-         for (int i = 0; i <  strlen(o)  ; i++) {   
-             current_name[i] = o[i];
-         }    
+         strcpy(current_name, o);     
     }
-    else if (strcmp(s, "execute")   == 0  ) {
-        output  =  execute(  o);
+    else if (strcmp(s, "execute")   == 0  ) { 
+         return  execute(  o);
     }  
 
   } else if (strcmp(v, "express")   == 0 ) {
     if (strcmp(v, "lights")   == 0) {
-      // PLace Holder 
-      output.v = "";
+      // PLace Holder  
     }
   } else if (strcmp(v, "movmeent")   == 0 ) {
     if (strcmp(s, "torso")   == 0 ) {
@@ -374,18 +428,18 @@ SVO core(char *v , char *s , char *o ) {
     }
   } else if (strcmp(v, "set")   == 0 ){ 
   
-    char t =  setMemory(s,  o);
-    output.o =  o;
+    char t =  setMemory(s,  o); 
+    strcpy(output.o, " "); 
  
   } else if (strcmp(v, "get")  ==0){
  
-    char* _t = getMemory(s);  
-    output.o = String(_t);
-    output.o =  _t;
+    char* _t = getMemory(s);   
 
-  } else if (v == 'clear') {
-    clearMemory();
-    output.o = String("cleared");
+    strcpy(output.o, _t); 
+
+  } else if (strcmp(v, "clear")  ==0){
+    clearMemory(); 
+    strcpy(output.o, "1");
  
   } else if (strcmp(v, "add")  ==0){
   
@@ -393,47 +447,51 @@ SVO core(char *v , char *s , char *o ) {
     char* v2 =  getMemory(o);  
     float f1 =  atof(v1);  
     float f2 =  atof(v2);  
-    float val = f1 + f2;  
-    output.o = String(val);
+    float value = f1 + f2;    
+    //   snprintf(output.o, sizeof(output.o), "%f", value);   
+    dtostrf(value, 4, 3, output.o);  
+
 
   } else if (strcmp(v, "increment")  ==0)  {
     char* v1 =  getMemory(s); 
     float f1 =  atof(v1);   
-    float val = f1 + 1;
-    char t =  setMemory(s,  val);
-    output.o = String(val);  
+    float value = f1 + 1;
+    //   snprintf(output.o, sizeof(output.o), "%f", value);   
+    dtostrf(value, 4, 3, output.o);  
 
   } else if (strcmp(v, "decrement")  ==0)  {
     char* v1 =  getMemory(s); 
     float f1 =  atof(v1);   
-    float val = f1 - 1;
-    char t =  setMemory(s,  val);
-    output.o = String(val);  
+    float value = f1 - 1; 
+    //   snprintf(output.o, sizeof(output.o), "%f", value);    
+    dtostrf(value, 4, 3, output.o);  
+
   } else if (strcmp(v, "subtract")  ==0)  {
     char* v1 =  getMemory(s);
     char* v2 =  getMemory(o);  
     float f1 =  atof(v1);  
     float f2 =  atof(v2);  
-    float val = f1 - f2;
-    output.o = String(val);
+    float value = f1 - f2;
+    //   snprintf(output.o, sizeof(output.o), "%f", value);   
+    dtostrf(value, 4, 3, output.o);  
 
   } else if (strcmp(v, "divide")  ==0)   {
     char* v1 =  getMemory(s);
     char* v2 =  getMemory(o);  
     float f1 =  atof(v1);  
-    float f2 =  atof(v2);  
-
-    float val = f1 / f2;
-    output.o = String(val);
+    float f2 =  atof(v2);   
+    float value = f1 / f2;
+    //   snprintf(output.o, sizeof(output.o), "%f", value);     
+    dtostrf(value, 4, 3, output.o);  
 
   } else if  (strcmp(v, "multiply")  ==0)  {
     char* v1 =  getMemory(s);
     char* v2 =  getMemory(o);  
     float f1 =  atof(v1);  
-    float f2 =  atof(v2);  
-
-    float val = f1 * f2;
-    output.o = String(val);
+    float f2 =  atof(v2);   
+    float value = f1 * f2;
+    //   snprintf(output.o, sizeof(output.o), "%f", value);   
+    dtostrf(value, 4, 3, output.o);  
 
   } else if (strcmp(v, "more")  ==0){
     char* v1 =  getMemory(s);
@@ -442,9 +500,9 @@ SVO core(char *v , char *s , char *o ) {
     float f2 =  atof(v2);  
 
     if (f1 > f2) {
-      output.o = "1";
-    } else {
-       output.o = "0";
+      strcpy(output.o, "1");
+    } else { 
+      strcpy(output.o, "0");
     }
 
   } else if (strcmp(v, "less")  ==0)   {
@@ -453,10 +511,10 @@ SVO core(char *v , char *s , char *o ) {
     float f1 =  atof(v1);  
     float f2 =  atof(v2);  
 
-    if (f1 < f2) {
-      output.o = "1";
-    } else {
-      output.o = "0";
+    if (f1 < f2) { 
+      strcpy(output.o, "1");
+    } else { 
+      strcpy(output.o, "0");
     }
 
   } else if (strcmp(v, "equal")  ==0)  {
@@ -466,9 +524,9 @@ SVO core(char *v , char *s , char *o ) {
     float f2 =  atof(v2);  
 
     if (f1 == f2) {
-      output.o = "1";
-    } else {
-      output.o= "0";
+      strcpy(output.o, "1");
+    } else { 
+      strcpy(output.o, "0");
     }
 
   } else if (strcmp(v, "different")  ==0)   {
@@ -478,9 +536,9 @@ SVO core(char *v , char *s , char *o ) {
     float f2 =  atof(v2);  
 
     if (f1 != f2) {
-      output.o = "1";
-    } else {
-      output.o = "0";
+      strcpy(output.o, "1");
+    } else { 
+      strcpy(output.o, "0");
     }
   } 
 
@@ -532,21 +590,18 @@ void loop() {
     s = strtok(NULL, " ");  
     o = strtok(NULL, " ");     
      
+    replace_char(v,';', '\0'); 
+    replace_char(s,';', '\0'); 
     replace_char(o,';', '\0'); 
     inCmds = "";
   
-    SVO results = dispatcher(v, s, o);
- 
-    String final = "";
-
-   // if (results.s != ""  &&  results.v != ""  &&  results.o != "") {
-    final.concat(results.s);
-    final.concat(" ");
-    final.concat(results.v);
-    final.concat(" ");
-    final.concat(results.o); 
-    Serial.println(final);
-  //  }
+    struct SVO results = dispatcher(v, s, o);
+  
+    Serial.print("[");   
+    Serial.print(results.o);  
+    Serial.println("]");
+    Serial.flush();
+     delay(250);
     
   }
 }
