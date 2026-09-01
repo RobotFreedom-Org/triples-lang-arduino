@@ -25,17 +25,8 @@ This is the first alpha release, and there is still a lot of work to be done.
 
 ## Installation
 
-First, download this repro and unzip it on your Desktop or projects folder. Then, open a terminal and navigate to Triples-Lang.
-
-Note: We prefer to not install Triples-Lang as a package because this project is primarily a teaching tool not production code. We want people to experiment and change the code on demand and package installations make this difficult.  
-
-The setup is slight different depending on whether you are using OSX, Windows or Linux. The code will run on degraded mode on most platforms but will only be fully functional on a RaspberryPi. 
-
-First, if you do not have Python3 and Pip installed please do before you begin.
-
-Triples-Lang does not have any exteranal requirements to ease deployment.
-
-
+First, download this repro and unzip it on your Desktop or project folder. Then, open a Arudino IDE and open the ino file.
+ 
 ## Getting Started
 
 Triples-Lang is designed as a secure language for AI agents and not inteneded to compete other languages like Java, Python or C++. 
@@ -51,6 +42,7 @@ Help provides a list of avaible commands.
 
 ## Examples
 
+All commanded must end with ; 
 Creating a variable uses the set command.
 
 ```bash 
