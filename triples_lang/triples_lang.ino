@@ -30,10 +30,19 @@
 #include "triples_lang.h" 
   
 */
-
+#include <Arduino.h>
 #include "struct.h" 
+
+
+#include "trpl_graph.cpp"
+
+int choice, keyId ,  valueID ;
+String key , value; 
+
+HashTableProp props  ;
+HashTableEdge edges  ; 
   
-const int MAX_CMD_LINES = 30;
+const int MAX_CMD_LINES = 20;
 const int MAX_VAR_NAME  = 6; 
 const int MAX_BLOCKS    = 2;
 const int MAX_CMDS      = 4;  
@@ -455,6 +464,7 @@ struct SVO core(char *v , char *s , char *o ) {
   } else if (strcmp(v, "increment")  ==0)  {
     char* v1 =  getMemory(s); 
     float f1 =  atof(v1);   
+    //
     float value = f1 + 1;
     //   snprintf(output.o, sizeof(output.o), "%f", value);   
     dtostrf(value, 4, 3, output.o);  
@@ -462,6 +472,7 @@ struct SVO core(char *v , char *s , char *o ) {
   } else if (strcmp(v, "decrement")  ==0)  {
     char* v1 =  getMemory(s); 
     float f1 =  atof(v1);   
+
     float value = f1 - 1; 
     //   snprintf(output.o, sizeof(output.o), "%f", value);    
     dtostrf(value, 4, 3, output.o);  
@@ -539,8 +550,57 @@ struct SVO core(char *v , char *s , char *o ) {
       strcpy(output.o, "1");
     } else { 
       strcpy(output.o, "0");
-    }
-  } 
+    } 
+
+    } else if (strcmp(v, "know")  == 0)   {
+ 
+       
+      if (strcmp(s, "add")  ==0)   {
+ 
+          char* _frm =   strtok(o  , "->");  
+          char* _to  =   strtok(NULL,"->");   
+          char* key   =  getMemory(_frm);
+          char* value =  getMemory(_to);  
+  
+          keyId   = edges.nextID();
+          valueID = keyId + 1;
+ 
+          edges.insert(keyId, valueID);
+          edges.insert(valueID, keyId);
+          props.insert(keyId, key);
+          props.insert(valueID, value); 
+          strcpy(output.o, o); 
+
+      } else if (strcmp(s, "key")  == 0)   {
+ 
+          int keyId =  atoi(o);  
+          int resp =  edges.search(keyId) ;  
+          snprintf(output.o, sizeof(output.o), "%i", resp);     
+
+      } else if (strcmp(s, "value")  == 0)   {
+          int keyId =  atoi(o);  
+          int resp =  edges.search(keyId) ;  
+          char* fin = props.search(resp);
+          strcpy(output.o, fin); 
+
+      } else if (strcmp(s, "match")  == 0)   { 
+
+        //  String key =  o;  
+          int keyId =  props.similar(o) ;  
+          char* resp = props.search(keyId); 
+          strcpy(output.o, resp);  
+
+      } else if (strcmp(s, "resp")  == 0)   { 
+ 
+          int keyId =  props.similar(o) ;   
+          int respId = edges.search(keyId) ;  
+          char* resp = props.search(respId);      
+          strcpy(output.o, resp);   z
+
+      } 
+    
+     } 
+
 
   return output;
  

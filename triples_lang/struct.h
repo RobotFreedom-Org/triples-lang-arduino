@@ -1,8 +1,8 @@
 
 struct SVO { 
-  char s[12] ;  
-  char v[12] ;  
-  char o[12] ;  
+  char s[10] ;  
+  char v[10] ;  
+  char o[10] ;  
 }; 
 
 struct cmdsSVO { 
