@@ -70,8 +70,7 @@ public:
 
         for (int i = 0; i <= TABLE_SIZE; i++) { 
               double sim = StringSimilarity(value, table[i] ); 
-
-               Serial.println(sim);  
+ 
               if (sim > 80) {
                   String v =  table[i];
                   return i ;

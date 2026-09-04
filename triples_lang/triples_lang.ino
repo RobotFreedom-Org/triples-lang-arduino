@@ -595,7 +595,7 @@ struct SVO core(char *v , char *s , char *o ) {
           int keyId =  props.similar(o) ;   
           int respId = edges.search(keyId) ;  
           char* resp = props.search(respId);      
-          strcpy(output.o, resp);   z
+          strcpy(output.o, resp);   
 
       } 
     
