@@ -1,4 +1,4 @@
-# <img src="./robot_freedom_ai/assets/logo_small.png" width="40">  Triples-Lang 
+# <img src="./triples-logo.png" width="40">  Triples-Lang 
 
 Welcome to the official robotic langauage call Triples maintained by RobotFreedom.org. This code is designed to help students of all ages get hands on experience with AgenticAI platforms.  
 
