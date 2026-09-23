@@ -31,9 +31,7 @@
   
 */
 #include <Arduino.h>
-#include "struct.h" 
-
-
+#include "struct.h"   
 #include "trpl_graph.cpp"
 
 int choice, keyId ,  valueID ;
@@ -61,7 +59,9 @@ float  MEMFLT[MAX_MEM] ;
 char MEMFLTNAME[MAX_MEM][MAX_VAR_NAME] ; 
 
 char current_name[ MAX_VAR_NAME] ; 
-  
+   
+LinkedList<int> Signals; 
+LinkedList<String> Records; 
 
 int current_blocks = -1;
 int current_mem    = -1;
@@ -647,12 +647,30 @@ void loop() {
  
     inCmds.toCharArray(cmds, MAX_CMD_LINES); 
     v = strtok(cmds, " ");  
-    s = strtok(NULL, " ");  
-    o = strtok(NULL, " ");     
-     
-    replace_char(v,';', '\0'); 
-    replace_char(s,';', '\0'); 
-    replace_char(o,';', '\0'); 
+    
+    if (s != NULL) 
+    { 
+       replace_char(s,';', '\0'); 
+       o =  strtok(NULL, " ");   
+                
+       if (o != NULL) 
+        {  
+         replace_char(o,';', '\0');  
+        }
+        else
+        {
+          o  =  new char[1]; 
+          o[0] =  'n'; 
+        } 
+      }
+      else
+      { 
+        s  =  new char[1]; 
+        s[0] =  'n';   
+        o  =  new char[1]; 
+         o[0] =  'n'; 
+     } 
+
     inCmds = "";
   
     struct SVO results = dispatcher(v, s, o);
